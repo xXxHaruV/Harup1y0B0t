@@ -1,7 +1,7 @@
 import { createBot, getBotIdFromToken, startBot } from "@discordeno/mod.ts";
 import { initializeDatabase } from "./utils/database.ts";
 import { RankDatabase } from "./database/rankDatabase.ts";
-import { runRankCommand } from "./handlers/rankHandler.ts";
+import { runRankCommand } from "./handlers/rankHandler.ts"; // 追加
 
 import "$std/dotenv/load.ts";
 
