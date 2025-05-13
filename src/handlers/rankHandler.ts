@@ -88,3 +88,103 @@ async function setXP(message: Message, args: string[]) {
   message.reply(`${target.user.tag} のXPを ${xp} に設定しました。`);
   logAction(message.guildId!, `${target.user.tag} のXPを ${xp} に設定しました。`);
 }
+// rankHandler.ts
+
+import { Message } from "@discordeno/bot";
+import { RankDatabase } from "../database/rankDatabase.ts";
+
+// ランクコマンドの実行
+export async function runRankCommand(command: string, message: Message, args: string[]) {
+  const userId = message.author.id;
+
+  // RankDatabaseを取得
+  const rankDb = message.client.database.rankDatabase;
+
+  // コマンドによる操作
+  if (command === "set") {
+    if (args.length < 2) {
+      message.reply("正しいフォーマットでランクを設定してください。例: a!rank set [ユーザーID] [ランク名]");
+      return;
+    }
+    const targetUserId = args[0];
+    const rankName = args[1];
+
+    // ランク設定
+    await rankDb.setRank(targetUserId, rankName);
+    message.reply(`${targetUserId} のランクが ${rankName} に設定されました。`);
+  }
+
+  // XPの追加
+  if (command === "add") {
+    if (args.length < 2) {
+      message.reply("XPの追加数を指定してください。例: a!rank add [ユーザーID] xp [数値]");
+      return;
+    }
+    const targetUserId = args[0];
+    const xpToAdd = parseInt(args[1]);
+
+    if (isNaN(xpToAdd)) {
+      message.reply("XPの数値を正しく入力してください。");
+      return;
+    }
+
+    // XP加算
+    await rankDb.addXP(targetUserId, xpToAdd);
+    message.reply(`${targetUserId} に ${xpToAdd} XP が追加されました。`);
+  }
+
+  // XPの削除
+  if (command === "remove") {
+    if (args.length < 2) {
+      message.reply("XPの削除数を指定してください。例: a!rank remove [ユーザーID] xp [数値]");
+      return;
+    }
+    const targetUserId = args[0];
+    const xpToRemove = parseInt(args[1]);
+
+    if (isNaN(xpToRemove)) {
+      message.reply("XPの数値を正しく入力してください。");
+      return;
+    }
+
+    // XP削除
+    const currentXP = await rankDb.getXP(targetUserId);
+    const newXP = currentXP - xpToRemove;
+
+    if (newXP < 0) {
+      message.reply("XPがマイナスにはなりません。");
+      return;
+    }
+
+    await rankDb.setXP(targetUserId, newXP);
+    message.reply(`${targetUserId} の XP が ${xpToRemove} 削除されました。`);
+  }
+
+  // レベル設定
+  if (command === "level") {
+    if (args.length < 2) {
+      message.reply("レベルを指定してください。例: a!rank level [ユーザーID] [レベル]");
+      return;
+    }
+    const targetUserId = args[0];
+    const level = parseInt(args[1]);
+
+    if (isNaN(level)) {
+      message.reply("レベルの数値を正しく入力してください。");
+      return;
+    }
+
+    // レベル設定（例: XPによるレベル計算）
+    const xpToLevelUp = level * 100; // 例えば、レベル1で100XP、レベル2で200XP...
+    await rankDb.setXP(targetUserId, xpToLevelUp);
+    message.reply(`${targetUserId} のレベルが ${level} に設定されました。`);
+  }
+
+  // ユーザーのランクとXPを表示
+  if (command === "get") {
+    const rank = await rankDb.getRank(userId);
+    const xp = await rankDb.getXP(userId);
+
+    message.reply(`あなたのランクは "${rank}" で、XPは ${xp} です。`);
+  }
+}
