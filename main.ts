@@ -3,6 +3,8 @@ import { runRankCommand } from "./handlers/rankHandler.ts";
 import { issueWarning, removeWarning, listWarnings } from "./handlers/warningHandler.ts"; // 追加
 import { temporaryBan } from "./handlers/banHandler.ts"; // 追加
 import { temporaryMute } from "./handlers/muteHandler.ts"; // 追加
+import { Database } from "./utils/database.ts";
+
 
 import "$std/dotenv/load.ts";
 
